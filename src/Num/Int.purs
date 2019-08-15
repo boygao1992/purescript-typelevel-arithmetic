@@ -151,58 +151,34 @@ class CompareDispatch (x_isNeg :: Bool.Boolean) (y_isNeg :: Bool.Boolean) (x :: 
 instance comparePosNeg :: CompareDispatch Bool.False Bool.True x y Ord.GT
 else instance compareNegPos :: CompareDispatch Bool.True Bool.False x y Ord.LT
 else instance comparePosPos ::
-  ( CompareNonNegative x y o
+  ( Nat.Compare x y o
   ) => CompareDispatch Bool.False Bool.False x y o
 else instance compareNegNeg ::
   ( Inverse x_neg x_pos
   , Inverse y_neg y_pos
-  , CompareNonNegative x_pos y_pos o'
+  , Nat.Compare x_pos y_pos o'
   , Ord.Invert o' o
   ) => CompareDispatch Bool.True Bool.True x_neg y_neg o
-
-class CompareNonNegative (x :: Symbol) (y :: Symbol) (o :: Ord.Ordering) | x y -> o
-
-instance compareNonNegativeImpl ::
-  ( ReverseSymbol x x'
-  , ReverseSymbol y y'
-  , CompareNonNegativeReversed x' y' o
-  ) => CompareNonNegative x y o
-
-class CompareNonNegativeReversed (x :: Symbol) (y :: Symbol) (o :: Ord.Ordering) | x y -> o
-
-instance compareNonNegativeReversedBaseCase1 ::
-  CompareNonNegativeReversed "" "" Ord.EQ
-else instance compareNonNegativeReversedBaseCase2 ::
-  CompareNonNegativeReversed "" y Ord.LT
-else instance compareNonNegativeReversedBaseCase3 ::
-  CompareNonNegativeReversed x "" Ord.GT
-else instance compareNonNegativeReversedInductionStep ::
-  ( Symbol.Cons x_h x_t x
-  , Symbol.Cons y_h y_t y
-  , CompareNonNegativeReversed x_t y_t o1
-  , Digit.Compare x_h y_h o2
-  , Ord.Append o1 o2 o
-  ) => CompareNonNegativeReversed x y o
 
 compare :: forall a b o. Compare a b o => SProxy a -> SProxy b -> OProxy o
 compare _ _ = OProxy :: OProxy o
 
 -- Test
--- compareExample1 :: OProxy LT
+-- compareExample1 :: OProxy Ord.LT
 -- compareExample1 = compare (SProxy :: SProxy "1") (SProxy :: SProxy "2")
--- compareExample2 :: OProxy GT
+-- compareExample2 :: OProxy Ord.GT
 -- compareExample2 = compare (SProxy :: SProxy "100") (SProxy :: SProxy "99")
--- compareExample3 :: OProxy LT
+-- compareExample3 :: OProxy Ord.LT
 -- compareExample3 = compare (SProxy :: SProxy "-100") (SProxy :: SProxy "99")
--- compareExample4 :: OProxy GT
+-- compareExample4 :: OProxy Ord.GT
 -- compareExample4 = compare (SProxy :: SProxy "100") (SProxy :: SProxy "-99")
--- compareExample5 :: OProxy LT
+-- compareExample5 :: OProxy Ord.LT
 -- compareExample5 = compare (SProxy :: SProxy "-100") (SProxy :: SProxy "-99")
--- compareExample6 :: OProxy EQ
+-- compareExample6 :: OProxy Ord.EQ
 -- compareExample6 = compare (SProxy :: SProxy "-100") (SProxy :: SProxy "-100")
--- compareExample7 :: OProxy EQ
+-- compareExample7 :: OProxy Ord.EQ
 -- compareExample7 = compare (SProxy :: SProxy "100") (SProxy :: SProxy "100")
--- compareExample8 :: OProxy EQ
+-- compareExample8 :: OProxy Ord.EQ
 -- compareExample8 = compare (SProxy :: SProxy "-100") (SProxy :: SProxy "-00100")
 
 -- | Add
@@ -370,12 +346,13 @@ class NormalizeDispatch (hasSign :: Bool.Boolean) (i :: Symbol) (o :: Symbol) | 
 
 instance normalizeHasSign ::
   ( Symbol.Cons sign num i -- sign num <- i
-  , NormalizeRemoveZero num num_nozero
+  , Nat.NormalizeRemoveZero num num_nozero
   , NormalizeSign sign num_nozero sign'
   , Symbol.Append sign' num_nozero o
   ) => NormalizeDispatch Bool.True i o
-else instance normalizeNoSign ::
-  ( NormalizeRemoveZero i o
+else
+instance normalizeNoSign ::
+  ( Nat.NormalizeRemoveZero i o
   ) => NormalizeDispatch Bool.False i o
 
 class NormalizeSign (sign :: Symbol) (num :: Symbol) (normalized :: Symbol) | sign -> normalized
@@ -383,36 +360,6 @@ class NormalizeSign (sign :: Symbol) (num :: Symbol) (normalized :: Symbol) | si
 instance normalizeSignPlus :: NormalizeSign "+" num ""
 else instance normalizeSignMinus :: NormalizeSign "-" "0" ""
 else instance normalizeSignMinus2 :: NormalizeSign "-" num "-"
-
-class NormalizeRemoveZero (num :: Symbol) (normalized :: Symbol) | num -> normalized
-instance normalizeRemoveZeroImpl ::
-  ( NormalizeRemoveZeroBaseCase num o
-  , NormalizeRemoveZeroRecoverZero o normalized
-  ) => NormalizeRemoveZero num normalized
-
-class NormalizeRemoveZeroBaseCase (num :: Symbol) (o :: Symbol) | num -> o
-instance normalizeRemoveZeroBaseCaseEmpty ::
-  NormalizeRemoveZeroBaseCase "" ""
-else instance normalizeRemoveZeroBaseCaseNonEmpty ::
-  ( Symbol.Cons h t num
-  , NormalizeRemoveZeroInductionStep h t o
-  ) => NormalizeRemoveZeroBaseCase num o
-
-class NormalizeRemoveZeroInductionStep (h :: Symbol) (t :: Symbol) (o :: Symbol) | h t -> o
-
-instance normalizeRemoveZeroInductionStepZero ::
-  ( NormalizeRemoveZeroBaseCase t o
-  ) => NormalizeRemoveZeroInductionStep "0" t o
-else instance normalizeRemoveZeroInductionStepNonZero ::
-  ( Symbol.Append h t o
-  ) => NormalizeRemoveZeroInductionStep h t o
-
-class NormalizeRemoveZeroRecoverZero (i :: Symbol) (o :: Symbol) | i -> o
-
-instance normalizeRemoveZeroRecoverZeroEmpty ::
-  NormalizeRemoveZeroRecoverZero "" "0"
-else instance normalizeRemoveZeroRecoverZeroNonEmpty ::
-  NormalizeRemoveZeroRecoverZero i i
 
 normalize :: forall i o. Normalize i o => SProxy i -> SProxy o
 normalize _ = SProxy :: SProxy o

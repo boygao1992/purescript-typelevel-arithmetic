@@ -7,18 +7,19 @@ import Type.Data.Ordering as Ord
 
 -- | Type-level Digit
 
-class IsDigit (d :: Symbol)
+class IsDigit (d :: Symbol) where
+  reifyDigit :: SProxy d -> Int
 
-instance numberZero :: IsDigit "0"
-instance numberOne :: IsDigit "1"
-instance numberTwo :: IsDigit "2"
-instance numberThree :: IsDigit "3"
-instance numberFour :: IsDigit "4"
-instance numberFive :: IsDigit "5"
-instance numberSix :: IsDigit "6"
-instance numberSeven :: IsDigit "7"
-instance numberEight :: IsDigit "8"
-instance numberNine :: IsDigit "9"
+instance numberZero  :: IsDigit "0" where reifyDigit _ = 0
+instance numberOne   :: IsDigit "1" where reifyDigit _ = 1
+instance numberTwo   :: IsDigit "2" where reifyDigit _ = 2
+instance numberThree :: IsDigit "3" where reifyDigit _ = 3
+instance numberFour  :: IsDigit "4" where reifyDigit _ = 4
+instance numberFive  :: IsDigit "5" where reifyDigit _ = 5
+instance numberSix   :: IsDigit "6" where reifyDigit _ = 6
+instance numberSeven :: IsDigit "7" where reifyDigit _ = 7
+instance numberEight :: IsDigit "8" where reifyDigit _ = 8
+instance numberNine  :: IsDigit "9" where reifyDigit _ = 9
 
 class IsDigitPred (d :: Symbol) (b :: Bool.Boolean) | d -> b
 
