@@ -17,40 +17,40 @@ import Type.Data.Symbol as Symbol
 -- | IsNat
 
 class IsNat (n :: Symbol) where
-  reifyNat :: SProxy n -> Int
+  reflectNat :: SProxy n -> Int
 
 instance isNatImpl ::
   ( NormalizeRemoveZero n n0
   , ReverseSymbol n0 n1
   , IsNatReversed n1
   ) => IsNat n where
-    reifyNat _ = reifyNatReversed (SProxy :: SProxy n1)
+    reflectNat _ = reflectNatReversed (SProxy :: SProxy n1)
 
 class IsNatReversed (n :: Symbol) where
-  reifyNatReversed :: SProxy n -> Int
+  reflectNatReversed :: SProxy n -> Int
 
 instance isNatReversedImpl
   :: ( Symbol.Cons h t n
     , IsNatCons h t
     )
   => IsNatReversed n where
-    reifyNatReversed _ = reifyNatCons (SProxy :: SProxy h) (SProxy :: SProxy t)
+    reflectNatReversed _ = reflectNatCons (SProxy :: SProxy h) (SProxy :: SProxy t)
 
 class IsNatCons (h :: Symbol) (t :: Symbol) where
-  reifyNatCons :: SProxy h -> SProxy t -> Int
+  reflectNatCons :: SProxy h -> SProxy t -> Int
 
 instance isNatImplBaseCase ::
   ( Digit.IsDigit h
   ) => IsNatCons h "" where
-    reifyNatCons _ _ = Digit.reifyDigit (SProxy :: SProxy h)
+    reflectNatCons _ _ = Digit.reflectDigit (SProxy :: SProxy h)
 else
 instance isNatImplInductionStep ::
   ( Digit.IsDigit h
   , IsNatReversed t
   ) => IsNatCons h t where
-    reifyNatCons _ _
-      = Digit.reifyDigit (SProxy :: SProxy h)
-      + reifyNatReversed (SProxy :: SProxy t) * 10
+    reflectNatCons _ _
+      = Digit.reflectDigit (SProxy :: SProxy h)
+      + reflectNatReversed (SProxy :: SProxy t) * 10
 
 -- | IsNatPred
 
