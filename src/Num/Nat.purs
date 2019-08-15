@@ -127,8 +127,7 @@ add _ _ = SProxy :: SProxy z
 class Succ (pred :: Symbol) (succ :: Symbol) | pred -> succ
 
 instance succImpl ::
-  ( IsNat pred
-  , Add pred "1" succ
+  ( Add pred "1" succ
   ) => Succ pred succ
 
 succ :: forall pred succ. Succ pred succ => SProxy pred -> SProxy succ
