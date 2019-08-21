@@ -208,3 +208,75 @@ compare _ _ = OProxy :: OProxy o
 class Eq (x :: Symbol) (y :: Symbol)
 
 instance eqNat :: Compare x y Ord.EQ => Eq x y
+
+-- | Length
+
+class Length (s :: Symbol) (n :: Symbol) | s -> n
+
+instance lengthZero :: Length "" "0"
+else
+instance lengthPositive ::
+  ( Symbol.Cons s_h s_t s
+  , Length s_t n'
+  , Succ n' n
+  )
+  => Length s n
+
+length :: forall s n. Length s n => SProxy s -> SProxy n
+length _ = SProxy :: SProxy n
+
+-- lengthExample0 :: SProxy "0"
+-- lengthExample0 = length (SProxy :: SProxy "")
+-- lengthExample1 :: SProxy "5"
+-- lengthExample1 = length (SProxy :: SProxy "wenbo")
+
+-- | DividedByDigit
+
+class Digit.IsDigit y <=
+  DivideByDigit (x :: Symbol) (y :: Symbol) (z :: Symbol) (remainder :: Symbol)
+  | x y -> z remainder
+
+instance divideByDigitInit ::
+  ( Digit.IsDigit y
+  , Symbol.Cons x_h x_t x
+  , DivideByDigitImpl "0" x_h x_t y z' remainder
+  , NormalizeRemoveZero z' z
+  )
+  => DivideByDigit x y z remainder
+
+class Digit.IsDigit y <=
+  DivideByDigitImpl (x0 :: Symbol) (x1 :: Symbol) (x_t :: Symbol) (y :: Symbol) (z :: Symbol) (remainder :: Symbol)
+  | x0 x1 x_t y -> z remainder
+
+instance divideByDigitBaseCase ::
+  ( Digit.Divide x0 "0" y z1 r1
+  , Digit.Divide "0" x1 y z2 r2
+  , Digit.Add z1 z2 "0" z
+  , Digit.Add r1 r2 "0" r
+  )
+  => DivideByDigitImpl x0 x1 "" y z r
+else
+instance divideByDigitInductionStep ::
+  ( Digit.Divide x0 "0" y z_h1 r1
+  , Digit.Divide "0" x1 y z_h2 r2
+  , Digit.Add z_h1 z_h2 "0" z_h
+  , Digit.Add r1 r2 "0" r
+  , Symbol.Cons x_t_h x_t_t x_t
+  , DivideByDigitImpl r x_t_h x_t_t y z_t remainder
+  , Symbol.Append z_h z_t z
+  )
+  => DivideByDigitImpl x0 x1 x_t y z remainder
+
+-- data Tuple a b = Tuple a b
+-- divideByDigit :: forall x y z r. DivideByDigit x y z r => SProxy x -> SProxy y -> Tuple (SProxy z) (SProxy r)
+-- divideByDigit _ _ = Tuple (SProxy :: SProxy z) (SProxy :: SProxy r)
+
+-- divideByDigitExample1 :: Tuple (SProxy "61") (SProxy "1")
+-- divideByDigitExample1 = divideByDigit (SProxy :: SProxy "123") (SProxy :: SProxy "2")
+
+-- | Multiply
+-- NOTE [Karatsuba algorithm](https://en.wikipedia.org/wiki/Karatsuba_algorithm)
+-- Base = 10, m = half
+
+class Multiply (x :: Symbol) (y :: Symbol) (z :: Symbol) | x y -> z
+

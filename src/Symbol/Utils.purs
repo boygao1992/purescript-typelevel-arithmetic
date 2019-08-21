@@ -4,6 +4,7 @@ import Type.Data.Symbol (SProxy(..))
 import Type.Data.Symbol as Symbol
 
 -- | Remove Space
+
 class RemoveSpace (i :: Symbol) (o :: Symbol) | i -> o
 
 instance removeSpaceEmpty :: RemoveSpace "" ""
